@@ -1,0 +1,90 @@
+const express = require('express');
+const router = express.Router();
+const supabase = require('../lib/supabase');
+const { requireAuth, requireSubscription } = require('../middleware/auth');
+
+/**
+ * GET /api/scores
+ * Fetch authenticated user's latest 5 scores (most recent first)
+ */
+router.get('/', requireAuth, requireSubscription, async (req, res) => {
+  const { data, error } = await supabase
+    .from('golf_scores')
+    .select('*')
+    .eq('user_id', req.user.id)
+    .order('played_date', { ascending: false })
+    .limit(5);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+/**
+ * POST /api/scores
+ * Add a new score (rolling 5 enforced via DB trigger)
+ * Body: { score: number, played_date: 'YYYY-MM-DD' }
+ */
+router.post('/', requireAuth, requireSubscription, async (req, res) => {
+  const { score, played_date } = req.body;
+
+  // Validate score range
+  if (!score || score < 1 || score > 45) {
+    return res.status(400).json({ error: 'Score must be between 1 and 45' });
+  }
+  if (!played_date) {
+    return res.status(400).json({ error: 'played_date is required' });
+  }
+
+  const { data, error } = await supabase
+    .from('golf_scores')
+    .insert({ user_id: req.user.id, score, played_date })
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(201).json(data);
+});
+
+/**
+ * PUT /api/scores/:id
+ * Edit a score entry
+ */
+router.put('/:id', requireAuth, requireSubscription, async (req, res) => {
+  const { score, played_date } = req.body;
+
+  if (score && (score < 1 || score > 45)) {
+    return res.status(400).json({ error: 'Score must be between 1 and 45' });
+  }
+
+  const updates = {};
+  if (score) updates.score = score;
+  if (played_date) updates.played_date = played_date;
+
+  const { data, error } = await supabase
+    .from('golf_scores')
+    .update(updates)
+    .eq('id', req.params.id)
+    .eq('user_id', req.user.id) // ownership check
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  if (!data) return res.status(404).json({ error: 'Score not found' });
+  res.json(data);
+});
+
+/**
+ * DELETE /api/scores/:id
+ */
+router.delete('/:id', requireAuth, requireSubscription, async (req, res) => {
+  const { error } = await supabase
+    .from('golf_scores')
+    .delete()
+    .eq('id', req.params.id)
+    .eq('user_id', req.user.id);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ message: 'Score deleted' });
+});
+
+module.exports = router;

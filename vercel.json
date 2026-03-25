@@ -1,0 +1,59 @@
+const supabase = require('../lib/supabase');
+
+/**
+ * Middleware: verify Supabase JWT and attach user to req
+ */
+async function requireAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing or invalid authorization header' });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+
+  if (error || !user) {
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+
+  // Attach user & profile to request
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  req.user = user;
+  req.profile = profile;
+  next();
+}
+
+/**
+ * Middleware: require active subscription
+ */
+async function requireSubscription(req, res, next) {
+  const { data: sub } = await supabase
+    .from('subscriptions')
+    .select('status')
+    .eq('user_id', req.user.id)
+    .eq('status', 'active')
+    .single();
+
+  if (!sub) {
+    return res.status(403).json({ error: 'Active subscription required' });
+  }
+  next();
+}
+
+/**
+ * Middleware: require admin role
+ */
+function requireAdmin(req, res, next) {
+  if (!req.profile?.is_admin) {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+}
+
+module.exports = { requireAuth, requireSubscription, requireAdmin };

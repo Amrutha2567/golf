@@ -1,0 +1,90 @@
+const express = require('express');
+const router = express.Router();
+const supabase = require('../lib/supabase');
+const { requireAuth } = require('../middleware/auth');
+
+/**
+ * POST /api/auth/register
+ * Register a new user and create profile
+ */
+router.post('/register', async (req, res) => {
+  const { email, password, full_name, charity_id, charity_percentage } = req.body;
+
+  if (!email || !password || !full_name) {
+    return res.status(400).json({ error: 'email, password, and full_name are required' });
+  }
+
+  // Create auth user via Supabase Auth
+  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true
+  });
+
+  if (authError) {
+    return res.status(400).json({ error: authError.message });
+  }
+
+  // Create profile
+  const { error: profileError } = await supabase.from('profiles').insert({
+    id: authData.user.id,
+    email,
+    full_name,
+    charity_id: charity_id || null,
+    charity_percentage: charity_percentage || 10
+  });
+
+  if (profileError) {
+    // Rollback auth user
+    await supabase.auth.admin.deleteUser(authData.user.id);
+    return res.status(500).json({ error: profileError.message });
+  }
+
+  res.status(201).json({ message: 'User registered successfully', user_id: authData.user.id });
+});
+
+/**
+ * GET /api/auth/me
+ * Get current user profile
+ */
+router.get('/me', requireAuth, async (req, res) => {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*, charities(name, slug, logo_url), subscriptions(status, plan, current_period_end)')
+    .eq('id', req.user.id)
+    .single();
+
+  res.json(profile);
+});
+
+/**
+ * PATCH /api/auth/me
+ * Update profile
+ */
+router.patch('/me', requireAuth, async (req, res) => {
+  const { full_name, phone, country, charity_id, charity_percentage } = req.body;
+
+  const updates = {};
+  if (full_name) updates.full_name = full_name;
+  if (phone) updates.phone = phone;
+  if (country) updates.country = country;
+  if (charity_id) updates.charity_id = charity_id;
+  if (charity_percentage) {
+    if (charity_percentage < 10 || charity_percentage > 100) {
+      return res.status(400).json({ error: 'Charity percentage must be between 10 and 100' });
+    }
+    updates.charity_percentage = charity_percentage;
+  }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', req.user.id)
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+module.exports = router;
