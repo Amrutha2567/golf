@@ -1,0 +1,479 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  :root {
+    --gh-bg: #0c1409;
+    --gh-surface: #131f10;
+    --gh-surface2: #1a2b16;
+    --gh-border: rgba(74,222,128,0.13);
+    --gh-green: #4ade80;
+    --gh-green-dim: rgba(74,222,128,0.55);
+    --gh-text: #f0fdf4;
+    --gh-muted: rgba(240,253,244,0.45);
+  }
+  .gh-wrap {
+    background: var(--gh-bg);
+    color: var(--gh-text);
+    min-height: 600px;
+    border-radius: 16px;
+    overflow: hidden;
+    font-size: 13px;
+  }
+  .gh-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    background: rgba(19,31,16,0.9);
+    border-bottom: 0.5px solid var(--gh-border);
+  }
+  .gh-logo { display: flex; align-items: center; gap: 7px; }
+  .gh-logo-icon {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #4ade80, #16a34a);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .gh-logo-text { font-size: 15px; font-weight: 500; letter-spacing: -0.3px; }
+  .gh-logo-text span { color: var(--gh-green); }
+  .gh-nav-links { display: flex; gap: 4px; }
+  .gh-nav-link {
+    padding: 5px 12px; border-radius: 8px; font-size: 12px; color: var(--gh-muted);
+    cursor: pointer; transition: all 0.15s;
+    border: none; background: none; color: rgba(240,253,244,0.45);
+  }
+  .gh-nav-link:hover, .gh-nav-link.active {
+    background: rgba(74,222,128,0.1); color: var(--gh-green);
+  }
+  .gh-btn-primary {
+    padding: 7px 16px; border-radius: 9px; font-size: 12px; font-weight: 500;
+    background: linear-gradient(135deg, #4ade80, #16a34a);
+    color: #0c1409; border: none; cursor: pointer;
+  }
+  .gh-btn-outline {
+    padding: 6px 14px; border-radius: 9px; font-size: 12px; font-weight: 500;
+    border: 0.5px solid rgba(74,222,128,0.35); background: none; color: var(--gh-green); cursor: pointer;
+  }
+
+  .view { display: none; animation: fadeIn 0.25s ease; }
+  .view.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .hero {
+    padding: 52px 24px 44px;
+    text-align: center;
+    background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(74,222,128,0.07) 0%, transparent 70%);
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: 20px;
+    border: 0.5px solid rgba(74,222,128,0.25);
+    background: rgba(74,222,128,0.06);
+    color: var(--gh-green); font-size: 11px; margin-bottom: 22px;
+  }
+  .pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--gh-green); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .hero h1 { font-size: 36px; font-weight: 500; line-height: 1.1; letter-spacing: -1px; margin-bottom: 14px; }
+  .hero h1 span { color: var(--gh-green); }
+  .hero p { color: var(--gh-muted); font-size: 14px; line-height: 1.6; max-width: 340px; margin: 0 auto 26px; }
+  .hero-btns { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; }
+  .hero-stats { display: flex; gap: 28px; justify-content: center; }
+  .hero-stat { color: var(--gh-muted); font-size: 11px; display: flex; align-items: center; gap: 5px; }
+  .hero-stat strong { color: var(--gh-text); font-weight: 500; }
+  .sep { width: 1px; height: 14px; background: rgba(255,255,255,0.1); }
+
+  .steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; padding: 0 20px 32px; }
+  .step-card {
+    background: var(--gh-surface); border: 0.5px solid var(--gh-border);
+    border-radius: 14px; padding: 16px;
+  }
+  .step-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(74,222,128,0.1); border: 0.5px solid rgba(74,222,128,0.2);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px;
+  }
+  .step-num { font-size: 26px; font-weight: 500; color: rgba(240,253,244,0.06); float: right; line-height: 1; }
+  .step-card h3 { font-size: 13px; font-weight: 500; margin-bottom: 5px; }
+  .step-card p { font-size: 11px; color: var(--gh-muted); line-height: 1.5; }
+
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px 20px; }
+  .dash-full { grid-column: 1/-1; }
+  .dash-card {
+    background: var(--gh-surface); border: 0.5px solid var(--gh-border);
+    border-radius: 14px; padding: 14px;
+  }
+  .dash-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .dash-card-head h4 { font-size: 12px; font-weight: 500; }
+  .dash-card-head span { font-size: 10px; color: var(--gh-muted); }
+  .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; padding: 0 20px 8px; }
+  .stat-card {
+    background: var(--gh-surface); border: 0.5px solid var(--gh-border);
+    border-radius: 12px; padding: 12px;
+  }
+  .stat-label { font-size: 10px; color: var(--gh-muted); margin-bottom: 6px; }
+  .stat-val { font-size: 18px; font-weight: 500; }
+  .stat-sub { font-size: 10px; color: var(--gh-muted); margin-top: 3px; }
+  .green { color: var(--gh-green); }
+  .yellow { color: #facc15; }
+  .blue { color: #60a5fa; }
+  .pink { color: #f472b6; }
+
+  .score-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; border-bottom: 0.5px solid var(--gh-border);
+  }
+  .score-row:last-child { border-bottom: none; }
+  .score-pill {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500; flex-shrink: 0;
+    border: 0.5px solid rgba(74,222,128,0.35); background: rgba(74,222,128,0.08); color: var(--gh-green);
+  }
+  .score-info { flex: 1; }
+  .score-info p { font-size: 12px; font-weight: 500; }
+  .score-info span { font-size: 10px; color: var(--gh-muted); }
+  .badge {
+    font-size: 9px; padding: 2px 7px; border-radius: 20px;
+    border: 0.5px solid; font-weight: 500;
+  }
+  .badge-green { background: rgba(74,222,128,0.1); color: #4ade80; border-color: rgba(74,222,128,0.25); }
+  .badge-yellow { background: rgba(250,204,21,0.1); color: #facc15; border-color: rgba(250,204,21,0.25); }
+  .badge-blue { background: rgba(96,165,250,0.1); color: #60a5fa; border-color: rgba(96,165,250,0.25); }
+
+  .draw-numbers { display: flex; gap: 8px; justify-content: center; padding: 18px 0 10px; }
+  .draw-ball {
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 2px solid rgba(74,222,128,0.5);
+    background: rgba(74,222,128,0.08);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 500; color: #86efac;
+  }
+  .prize-row {
+    display: flex; align-items: center; gap: 10px; padding: 8px 0;
+    border-bottom: 0.5px solid var(--gh-border);
+  }
+  .prize-row:last-child { border-bottom: none; }
+  .prize-bar-wrap { flex: 1; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+  .prize-bar { height: 100%; border-radius: 4px; }
+  .prize-label { font-size: 11px; color: var(--gh-muted); min-width: 80px; }
+  .prize-amount { font-size: 12px; font-weight: 500; min-width: 60px; text-align: right; }
+
+  .charity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .charity-card {
+    background: var(--gh-surface2); border: 0.5px solid var(--gh-border);
+    border-radius: 12px; padding: 12px;
+  }
+  .charity-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: rgba(74,222,128,0.1); border: 0.5px solid rgba(74,222,128,0.2);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 8px;
+  }
+  .charity-card h4 { font-size: 11px; font-weight: 500; margin-bottom: 3px; }
+  .charity-card p { font-size: 10px; color: var(--gh-muted); line-height: 1.4; }
+  .charity-raised { font-size: 10px; color: var(--gh-green); margin-top: 5px; }
+
+  .admin-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; padding: 0 20px 12px; }
+  .admin-card {
+    background: var(--gh-surface); border: 0.5px solid var(--gh-border);
+    border-radius: 12px; padding: 14px; cursor: pointer; transition: border-color 0.15s;
+  }
+  .admin-card:hover { border-color: rgba(74,222,128,0.3); }
+  .admin-card-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
+  }
+  .admin-card h4 { font-size: 12px; font-weight: 500; margin-bottom: 4px; }
+  .admin-card p { font-size: 10px; color: var(--gh-muted); line-height: 1.4; }
+
+  .tab-bar {
+    display: flex; gap: 4px; padding: 12px 20px 0; border-bottom: 0.5px solid var(--gh-border);
+  }
+  .tab {
+    padding: 6px 14px; border-radius: 8px 8px 0 0; font-size: 11px;
+    cursor: pointer; border: none; background: none; color: var(--gh-muted);
+    border-bottom: 2px solid transparent; margin-bottom: -0.5px;
+  }
+  .tab.active { color: var(--gh-green); border-bottom-color: var(--gh-green); }
+
+  .section-head {
+    padding: 14px 20px 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-head h3 { font-size: 14px; font-weight: 500; }
+  .section-head p { font-size: 11px; color: var(--gh-muted); }
+
+  svg.icon { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+</style>
+
+<div class="gh-wrap">
+  <div class="gh-nav">
+    <div class="gh-logo">
+      <div class="gh-logo-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </div>
+      <span class="gh-logo-text">Green<span>Heart</span></span>
+    </div>
+    <div class="gh-nav-links">
+      <button class="gh-nav-link active" onclick="showView('home',this)">Home</button>
+      <button class="gh-nav-link" onclick="showView('dashboard',this)">Dashboard</button>
+      <button class="gh-nav-link" onclick="showView('draws',this)">Draws</button>
+      <button class="gh-nav-link" onclick="showView('charities',this)">Charities</button>
+      <button class="gh-nav-link" onclick="showView('admin',this)">Admin</button>
+    </div>
+    <button class="gh-btn-primary">Subscribe</button>
+  </div>
+
+  <div id="view-home" class="view active">
+    <div class="hero">
+      <div class="hero-badge"><div class="pulse"></div> Monthly draw open — €12,400 pool</div>
+      <h1>Golf That Gives<br><span>Back.</span></h1>
+      <p>Enter your Stableford scores, compete in monthly prize draws, and support a charity you believe in.</p>
+      <div class="hero-btns">
+        <button class="gh-btn-primary">Start Subscribing</button>
+        <button class="gh-btn-outline">How It Works</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><strong>2,400+</strong> members</div>
+        <div class="sep"></div>
+        <div class="hero-stat" style="color:var(--gh-green)"><strong>€84,000</strong> raised</div>
+        <div class="sep"></div>
+        <div class="hero-stat"><strong>36</strong> draws</div>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step-card">
+        <span class="step-num">01</span>
+        <div class="step-icon">
+          <svg class="icon" style="color:var(--gh-green)" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <h3>Subscribe</h3>
+        <p>Monthly or yearly. Part of your fee builds the prize pool and funds your charity.</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">02</span>
+        <div class="step-icon">
+          <svg class="icon" style="color:var(--gh-green)" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h3>Enter Scores</h3>
+        <p>Log your latest 5 Stableford scores. Rolling record, always up to date.</p>
+      </div>
+      <div class="step-card">
+        <span class="step-num">03</span>
+        <div class="step-icon">
+          <svg class="icon" style="color:var(--gh-green)" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+        </div>
+        <h3>Win & Give</h3>
+        <p>Match 3, 4 or 5 drawn numbers. Jackpots roll over if unclaimed.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-dashboard" class="view">
+    <div class="section-head">
+      <div><h3>Hey, James 👋</h3><p>Here's your GreenHeart overview</p></div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Subscription</div><div class="stat-val green">Active</div><div class="stat-sub">Renews 12 Apr</div></div>
+      <div class="stat-card"><div class="stat-label">Total Won</div><div class="stat-val yellow">€140</div><div class="stat-sub">3 prizes</div></div>
+      <div class="stat-card"><div class="stat-label">Draws Entered</div><div class="stat-val blue">18</div><div class="stat-sub">All time</div></div>
+      <div class="stat-card"><div class="stat-label">Charity</div><div class="stat-val pink" style="font-size:13px">Irish Cancer</div><div class="stat-sub">10% of sub</div></div>
+    </div>
+    <div class="dash-grid" style="padding-top:4px">
+      <div class="dash-card">
+        <div class="dash-card-head"><h4>My Scores</h4><span class="badge badge-green">5/5</span></div>
+        <div class="score-row">
+          <div class="score-pill">32</div>
+          <div class="score-info"><p>32 pts</p><span>15 Mar 2026</span></div>
+          <span class="badge badge-green">Latest</span>
+        </div>
+        <div class="score-row">
+          <div class="score-pill">28</div>
+          <div class="score-info"><p>28 pts</p><span>8 Mar 2026</span></div>
+        </div>
+        <div class="score-row">
+          <div class="score-pill">35</div>
+          <div class="score-info"><p>35 pts</p><span>1 Mar 2026</span></div>
+        </div>
+        <div class="score-row">
+          <div class="score-pill">24</div>
+          <div class="score-info"><p>24 pts</p><span>22 Feb 2026</span></div>
+        </div>
+        <div class="score-row">
+          <div class="score-pill">30</div>
+          <div class="score-info"><p>30 pts</p><span>15 Feb 2026</span></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="dash-card">
+          <div class="dash-card-head"><h4>Subscription</h4></div>
+          <div style="font-size:11px;display:grid;gap:6px">
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--gh-muted)">Plan</span><span>Monthly — €9.99</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--gh-muted)">Status</span><span class="badge badge-green">active</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--gh-muted)">Next billing</span><span>12 Apr 2026</span></div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-head"><h4>My Charity</h4></div>
+          <p style="font-size:12px;font-weight:500">Irish Cancer Society</p>
+          <p style="font-size:10px;color:var(--gh-muted);margin-top:3px"><span style="color:var(--gh-green);font-weight:500">10%</span> of your subscription</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-draws" class="view">
+    <div class="section-head"><div><h3>Draw Results</h3><p>March 2026 — published</p></div><span class="badge badge-green">Latest</span></div>
+    <div style="padding:0 20px">
+      <div class="dash-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+          <div>
+            <p style="font-size:14px;font-weight:500">March 2026</p>
+            <p style="font-size:10px;color:var(--gh-muted)">Published 31 Mar 2026</p>
+          </div>
+          <p style="font-size:20px;font-weight:500;color:var(--gh-green)">€12,400</p>
+        </div>
+        <p style="font-size:10px;color:var(--gh-muted);margin-bottom:4px;letter-spacing:0.08em;text-transform:uppercase">Drawn numbers</p>
+        <div class="draw-numbers">
+          <div class="draw-ball">8</div>
+          <div class="draw-ball">19</div>
+          <div class="draw-ball">24</div>
+          <div class="draw-ball">31</div>
+          <div class="draw-ball">37</div>
+        </div>
+        <div style="margin-top:12px">
+          <div class="prize-row">
+            <span class="prize-label">5-Match 🏆</span>
+            <div class="prize-bar-wrap"><div class="prize-bar" style="width:40%;background:linear-gradient(90deg,#facc15,#f59e0b)"></div></div>
+            <span class="prize-amount yellow">€4,960</span>
+          </div>
+          <div class="prize-row">
+            <span class="prize-label">4-Match 🥈</span>
+            <div class="prize-bar-wrap"><div class="prize-bar" style="width:35%;background:linear-gradient(90deg,#60a5fa,#3b82f6)"></div></div>
+            <span class="prize-amount blue">€4,340</span>
+          </div>
+          <div class="prize-row">
+            <span class="prize-label">3-Match 🥉</span>
+            <div class="prize-bar-wrap"><div class="prize-bar" style="width:25%;background:linear-gradient(90deg,#4ade80,#22c55e)"></div></div>
+            <span class="prize-amount green">€3,100</span>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:8px 12px;border-radius:8px;background:rgba(250,204,21,0.05);border:0.5px solid rgba(250,204,21,0.15);font-size:10px;color:rgba(250,204,21,0.8)">
+          ↑ No 5-match winner — €4,960 jackpot rolls to April 2026
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-charities" class="view">
+    <div class="section-head"><h3>Charities</h3></div>
+    <div style="padding:0 20px 20px">
+      <div class="charity-grid">
+        <div class="charity-card" style="border-color:rgba(74,222,128,0.25)">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div class="charity-icon">
+              <svg class="icon" style="color:var(--gh-green);width:14px;height:14px" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <span style="font-size:9px;color:#facc15">★ Featured</span>
+          </div>
+          <h4>Irish Cancer Society</h4>
+          <p>Funding research and supporting those affected by cancer.</p>
+          <div class="charity-raised">€18,420 raised</div>
+        </div>
+        <div class="charity-card" style="border-color:rgba(74,222,128,0.25)">
+          <div class="charity-icon">
+            <svg class="icon" style="color:var(--gh-green);width:14px;height:14px" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <h4>Golf Foundation</h4>
+          <p>Making golf accessible to young people and communities.</p>
+          <div class="charity-raised">★ Featured</div>
+        </div>
+        <div class="charity-card">
+          <div class="charity-icon">
+            <svg class="icon" style="color:var(--gh-green);width:14px;height:14px" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <h4>Barnardos Ireland</h4>
+          <p>Supporting vulnerable children and families throughout Ireland.</p>
+          <div class="charity-raised">€6,100 raised</div>
+        </div>
+        <div class="charity-card">
+          <div class="charity-icon">
+            <svg class="icon" style="color:var(--gh-green);width:14px;height:14px" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <h4>Trócaire</h4>
+          <p>Working with communities to tackle poverty globally.</p>
+          <div class="charity-raised">€9,830 raised</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-admin" class="view">
+    <div class="section-head"><h3>Admin Dashboard</h3><span class="badge badge-blue">Admin</span></div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-val blue">2,418</div></div>
+      <div class="stat-card"><div class="stat-label">Active Subs</div><div class="stat-val green">1,847</div></div>
+      <div class="stat-card"><div class="stat-label">Prizes Paid</div><div class="stat-val yellow">€28,400</div></div>
+      <div class="stat-card"><div class="stat-label">Charity Raised</div><div class="stat-val pink">€84,000</div></div>
+    </div>
+    <div class="admin-grid">
+      <div class="admin-card">
+        <div class="admin-card-icon">
+          <svg class="icon" style="color:var(--gh-muted);width:14px;height:14px" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h4>Users</h4>
+        <p>View, edit users and subscriptions</p>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-icon">
+          <svg class="icon" style="color:var(--gh-muted);width:14px;height:14px" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <h4>Draws</h4>
+        <p>Configure, simulate, publish draws</p>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-icon">
+          <svg class="icon" style="color:var(--gh-muted);width:14px;height:14px" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+        </div>
+        <h4>Winners</h4>
+        <p>Verify proofs and mark payouts</p>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-icon">
+          <svg class="icon" style="color:var(--gh-muted);width:14px;height:14px" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <h4>Charities</h4>
+        <p>Manage charity listings and events</p>
+      </div>
+    </div>
+    <div style="padding:0 20px 20px">
+      <div class="dash-card">
+        <div class="dash-card-head"><h4>Recent winners — pending verification</h4></div>
+        <div class="score-row">
+          <div style="width:32px;height:32px;border-radius:50%;background:rgba(250,204,21,0.1);border:0.5px solid rgba(250,204,21,0.25);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#facc15">JM</div>
+          <div class="score-info"><p>James Murphy</p><span>4-Match · €4,340 · Mar 2026</span></div>
+          <span class="badge badge-yellow">pending</span>
+        </div>
+        <div class="score-row">
+          <div style="width:32px;height:32px;border-radius:50%;background:rgba(96,165,250,0.1);border:0.5px solid rgba(96,165,250,0.25);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#60a5fa">SK</div>
+          <div class="score-info"><p>Sarah Keane</p><span>3-Match · €1,033 · Mar 2026</span></div>
+          <span class="badge badge-yellow">pending</span>
+        </div>
+        <div class="score-row">
+          <div style="width:32px;height:32px;border-radius:50%;background:rgba(74,222,128,0.1);border:0.5px solid rgba(74,222,128,0.25);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#4ade80">BO</div>
+          <div class="score-info"><p>Brian O'Neill</p><span>3-Match · €1,033 · Mar 2026</span></div>
+          <span class="badge badge-green">paid</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showView(name, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.gh-nav-link').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
